@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h3>Dataset Analytics</h3>
+
+<div class="card p-3">
+
+<h5>Total Records: {{ total_records }}</h5>
+
+</div>
+
+<br>
+
+<h4>Statistical Summary</h4>
+
+{{ summary|safe }}
+
+{% endblock %}

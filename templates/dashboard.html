@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Analytics Dashboard</h2>
+
+<div class="row mb-4">
+
+<div class="col-md-3">
+<div class="card p-3">
+<h5>Total Datasets</h5>
+<h2>{{ total_datasets }}</h2>
+</div>
+</div>
+
+<div class="col-md-3">
+<div class="card p-3">
+<h5>Total Records</h5>
+<h2>{{ total_records }}</h2>
+</div>
+</div>
+
+</div>
+
+
+<!-- Dataset Selector -->
+
+<form method="GET">
+
+<select name="dataset" class="form-select" onchange="this.form.submit()">
+
+{% for d in datasets %}
+
+<option value="{{ d.id }}"
+{% if selected_dataset == d.id %}selected{% endif %}>
+Dataset {{ d.id }} - {{ d.filename }}
+</option>
+
+{% endfor %}
+
+</select>
+
+</form>
+
+
+<br>
+
+<!-- Category Chart -->
+
+<div class="row">
+
+<div class="col-md-6">
+
+<h5>Category Distribution</h5>
+
+<canvas id="categoryChart"></canvas>
+
+</div>
+
+
+<div class="col-md-6">
+
+<h5>Monthly Trend</h5>
+
+<canvas id="monthChart"></canvas>
+
+</div>
+
+</div>
+
+<br>
+
+<!-- Dataset Preview -->
+
+<h4>Dataset Preview</h4>
+
+<table class="table table-bordered">
+
+<thead>
+
+<tr>
+
+{% for col in preview_columns %}
+<th>{{ col }}</th>
+{% endfor %}
+
+</tr>
+
+</thead>
+
+<tbody>
+
+{% for row in preview_rows %}
+
+<tr>
+
+{% for cell in row %}
+<td>{{ cell }}</td>
+{% endfor %}
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+
+<script>
+
+const categoryChart = new Chart(
+document.getElementById('categoryChart'),
+{
+type:'bar',
+data:{
+labels: {{ category_labels | tojson }},
+datasets:[{
+label:'Category Count',
+data: {{ category_values | tojson }}
+}]
+}
+});
+
+const monthChart = new Chart(
+document.getElementById('monthChart'),
+{
+type:'line',
+data:{
+labels: {{ month_labels | tojson }},
+datasets:[{
+label:'Monthly Records',
+data: {{ month_values | tojson }}
+}]
+}
+});
+
+</script>
+
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h3>Upload Dataset</h3>
+
+<div class="card p-4">
+
+<form method="POST" enctype="multipart/form-data">
+
+<div class="mb-3">
+
+<label class="form-label">Select CSV File</label>
+
+<input type="file" name="file" class="form-control" required>
+
+</div>
+
+<button class="btn btn-primary">
+Upload Dataset
+</button>
+
+</form>
+
+</div>
+
+{% endblock %}

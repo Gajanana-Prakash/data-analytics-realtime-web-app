@@ -1,0 +1,65 @@
+/* Page styling */
+body{
+font-family: Arial, sans-serif;
+background:#f5f5f5;
+margin:40px;
+}
+
+/* Main heading */
+h1{
+color:#333;
+}
+
+/* Dashboard card container */
+.container{
+display:flex;
+gap:20px;
+flex-wrap:wrap;
+}
+
+/* Summary cards */
+.card{
+background:white;
+padding:20px;
+border-radius:10px;
+box-shadow:0 2px 8px rgba(0,0,0,0.1);
+flex:1;
+min-width:200px;
+}
+
+/* Chart section cards */
+.chart-card{
+background:white;
+padding:20px;
+margin-top:20px;
+border-radius:10px;
+box-shadow:0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* Table styling */
+table{
+margin-top:20px;
+width:100%;
+border-collapse:collapse;
+}
+
+/* Table cells */
+td, th{
+padding:8px;
+border:1px solid #ddd;
+}
+
+/* Buttons */
+button{
+background:#2196F3;
+color:white;
+border:none;
+padding:10px 15px;
+border-radius:5px;
+cursor:pointer;
+}
+
+/* Button hover effect */
+button:hover{
+background:#1976D2;
+}
