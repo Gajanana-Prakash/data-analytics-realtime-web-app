@@ -8,6 +8,7 @@ import pandas as pd
 from datetime import datetime
 
 from flask import Flask, request, jsonify, redirect, render_template, session
+from flask_socketio import SocketIO
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
@@ -18,6 +19,7 @@ from werkzeug.utils import secure_filename
 # ==============================
 
 app = Flask(__name__)
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 app.config["SECRET_KEY"] = "secretkey"
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
@@ -394,4 +396,4 @@ if __name__ == "__main__":
     with app.app_context():
         db.create_all()
 
-    app.run(debug=True)
+    socketio.run(app, debug=True)
