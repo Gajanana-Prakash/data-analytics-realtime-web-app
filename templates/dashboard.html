@@ -137,4 +137,24 @@ data: {{ month_values | tojson }}
 
 </script>
 
+
+<script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
+
+<script>
+
+    // Connect to backend server
+    const socket = io();
+
+    // When connected
+    socket.on('connect', function() {
+        console.log("Connected to server");
+    });
+
+    // Receive message from backend
+    socket.on('message', function(data) {
+        console.log("Message from server:", data);
+    });
+
+</script>
+
 {% endblock %}

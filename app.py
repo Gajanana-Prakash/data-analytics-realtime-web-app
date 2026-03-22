@@ -77,6 +77,16 @@ def analyze_dataset(filepath):
 
 
 # ==============================
+# SOCKET.IO EVENTS
+# ==============================
+
+@socketio.on('connect')
+def handle_connect():
+    print("Client connected")
+    socketio.emit('message', {'data': 'Connected successfully'})
+
+
+# ==============================
 # HOME ROUTE
 # ==============================
 
