@@ -8,6 +8,7 @@ import pandas as pd
 from datetime import datetime
 
 from flask import Flask, request, jsonify, redirect, render_template, session
+# type: ignore
 from flask_socketio import SocketIO
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -331,9 +332,11 @@ def dashboard():
 
                 print("Error loading dataset:", e)
 
+    notification = session.pop("notification", None)
+
     return render_template(
     "dashboard.html",
-    notification = session.pop("notification", None),   # ✅ ADD THIS
+    notification=notification,   # ✅ ADD THIS
     datasets=datasets,
     selected_dataset=selected_dataset.id if selected_dataset else None,
     total_records=total_records,
@@ -417,4 +420,4 @@ if __name__ == "__main__":
     socketio.run(app, debug=True)
 
 
-    # TODO: Notification working in backend but not showing in UI
+   
