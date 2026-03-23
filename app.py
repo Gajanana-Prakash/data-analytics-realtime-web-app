@@ -208,6 +208,11 @@ def upload():
             db.session.add(dataset)
             db.session.commit()
 
+            # 🔥 REAL-TIME NOTIFICATION
+            socketio.emit('notification', {
+                'message': 'Dataset uploaded successfully'
+            })
+
             return redirect("/dashboard")
 
         except Exception as e:

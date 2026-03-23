@@ -155,6 +155,11 @@ data: {{ month_values | tojson }}
         console.log("Message from server:", data);
     });
 
+    // 🔥 NEW NOTIFICATION
+    socket.on('notification', function(data) {
+        alert(data.message);
+    });
+
 </script>
 
 {% endblock %}
