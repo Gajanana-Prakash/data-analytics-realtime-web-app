@@ -4,11 +4,12 @@
 
 import os
 import uuid
+import time
 import pandas as pd
 from datetime import datetime
 
 from flask import Flask, request, jsonify, redirect, render_template, session
-# type: ignore
+# type: ignore yellow error
 from flask_socketio import SocketIO
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -73,6 +74,42 @@ def analyze_dataset(filepath):
     total_records = len(df)
 
     summary = df.describe().to_html()
+
+    return total_records, summary
+
+
+# ==============================
+# REAL-TIME PROCESSING FUNCTION
+# ==============================
+
+import time  # ✅ add this at top also (important)
+
+def process_data(filepath):
+
+    # Step 1
+    socketio.emit('progress', {'status': 'Processing started'})
+    print("Processing started")
+    time.sleep(1)
+
+    df = pd.read_csv(filepath)
+
+    # Step 2
+    socketio.emit('progress', {'status': 'Calculating summary'})
+    print("Calculating summary")
+    time.sleep(1)
+
+    summary = df.describe().to_json()
+
+    # Step 3
+    socketio.emit('progress', {'status': 'Generating insights'})
+    print("Generating insights")
+    time.sleep(1)
+
+    total_records = len(df)
+
+    # Step 4
+    socketio.emit('progress', {'status': 'Completed ✅'})
+    print("Completed")
 
     return total_records, summary
 
@@ -200,6 +237,9 @@ def upload():
 
             file.save(filepath)
             print("Step 2: File saved")
+
+            # 🔥 CALL REAL-TIME PROCESS FUNCTION
+            total_records, summary = process_data(filepath)
 
             dataset = Dataset(
                 filename=unique_filename,

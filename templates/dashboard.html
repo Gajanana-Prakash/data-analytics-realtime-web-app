@@ -37,6 +37,18 @@
 
 <br>
 
+<!-- ✅ PROGRESS BOX (ADD HERE) -->
+
+<div id="progress" style="
+    background:#f1f1f1;
+    padding:10px;
+    margin-bottom:15px;
+    border-radius:5px;
+    font-weight:bold;
+">
+    Waiting for process...
+</div>
+
 <!-- Charts -->
 
 <div class="row">
@@ -153,6 +165,19 @@ socket.on('connect', function() {
 socket.on('message', function(data) {
     console.log("Message from server:", data);
 });
+
+// ✅ PROGRESS LISTENER
+socket.on('progress', function(data) {
+    console.log("Progress:", data.status); // debug
+
+    const progressBox = document.getElementById("progress");
+
+    if (progressBox) {
+        progressBox.innerText = data.status;
+    }
+});
+
+
 
 // ✅ REAL UI NOTIFICATION
 
