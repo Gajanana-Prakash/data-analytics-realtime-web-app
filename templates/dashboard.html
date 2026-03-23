@@ -144,16 +144,41 @@ new Chart(monthCanvas, {
 
 const socket = io();
 
+// When connected
 socket.on('connect', function() {
     console.log("Connected to server");
 });
 
+// Test message
 socket.on('message', function(data) {
     console.log("Message from server:", data);
 });
 
+// ✅ REAL UI NOTIFICATION
 socket.on('notification', function(data) {
-    alert(data.message);
+
+    // Step 1: Create a new div
+    const box = document.createElement("div");
+
+    // Step 2: Add message text
+    box.innerText = data.message;
+
+    // Step 3: Styling (UI design)
+    box.style.background = "green";
+    box.style.color = "white";
+    box.style.padding = "10px";
+    box.style.margin = "10px";
+    box.style.borderRadius = "5px";
+    box.style.fontWeight = "bold";
+
+    // Step 4: Add to top of page
+    document.body.prepend(box);
+
+    // Step 5: Remove after 3 seconds
+    setTimeout(() => {
+        box.remove();
+    }, 3000);
+
 });
 
 </script>

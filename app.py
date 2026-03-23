@@ -187,9 +187,9 @@ def upload():
             return "Only CSV files allowed"
 
         try:
+            print("Step 1: Upload started")
 
             filename = secure_filename(file.filename)
-
             unique_filename = str(uuid.uuid4()) + "_" + filename
 
             filepath = os.path.join(
@@ -198,6 +198,7 @@ def upload():
             )
 
             file.save(filepath)
+            print("Step 2: File saved")
 
             dataset = Dataset(
                 filename=unique_filename,
@@ -207,11 +208,12 @@ def upload():
 
             db.session.add(dataset)
             db.session.commit()
+            print("Step 3: Database saved")
 
-            # 🔥 REAL-TIME NOTIFICATION
-            socketio.emit('notification', {
-                'message': 'Dataset uploaded successfully'
-            })
+            # 🔥 SEND NOTIFICATION
+            session["notification"] = "Dataset uploaded successfully"
+
+            print("Step 4: Notification sent")
 
             return redirect("/dashboard")
 
@@ -330,19 +332,20 @@ def dashboard():
                 print("Error loading dataset:", e)
 
     return render_template(
-        "dashboard.html",
-        datasets=datasets,
-        selected_dataset=selected_dataset.id if selected_dataset else None,
-        total_records=total_records,
-        total_datasets=len(datasets),
-        category_labels=list(category_counts.keys()),
-        category_values=list(category_counts.values()),
-        month_labels=list(monthly_counts.keys()),
-        month_values=list(monthly_counts.values()),
-        corr_labels=corr_labels,
-        corr_values=corr_values,
-        preview_columns=preview_columns,
-        preview_rows=preview_rows
+    "dashboard.html",
+    notification = session.pop("notification", None),   # ✅ ADD THIS
+    datasets=datasets,
+    selected_dataset=selected_dataset.id if selected_dataset else None,
+    total_records=total_records,
+    total_datasets=len(datasets),
+    category_labels=list(category_counts.keys()),
+    category_values=list(category_counts.values()),
+    month_labels=list(monthly_counts.keys()),
+    month_values=list(monthly_counts.values()),
+    corr_labels=corr_labels,
+    corr_values=corr_values,
+    preview_columns=preview_columns,
+    preview_rows=preview_rows
     )
 
 
