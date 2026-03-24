@@ -86,30 +86,62 @@ import time  # ✅ add this at top also (important)
 
 def process_data(filepath):
 
-    # Step 1
     socketio.emit('progress', {'status': 'Processing started'})
-    print("Processing started")
     time.sleep(1)
 
     df = pd.read_csv(filepath)
 
-    # Step 2
+    # ✅ FIX: standardize column names
+    df.columns = df.columns.str.strip().str.lower()
+
     socketio.emit('progress', {'status': 'Calculating summary'})
-    print("Calculating summary")
     time.sleep(1)
 
     summary = df.describe().to_json()
 
-    # Step 3
     socketio.emit('progress', {'status': 'Generating insights'})
-    print("Generating insights")
     time.sleep(1)
 
     total_records = len(df)
 
-    # Step 4
+    # ===============================
+    # 🔥 CREATE CHART DATA
+    # ===============================
+
+    # Example (adjust column names as per your dataset)
+
+    # Category Chart
+    if 'category' in df.columns:
+        category_data = df['category'].value_counts()
+        category_labels = category_data.index.tolist()
+        category_values = category_data.values.tolist()
+    else:
+        category_labels = []
+        category_values = []
+
+    # Monthly Chart
+    if 'order date' in df.columns:
+        df['order date'] = pd.to_datetime(df['order date'], errors='coerce')
+
+        month_data = df.groupby(df['order date'].dt.to_period('M')).size()
+
+        month_labels = month_data.index.astype(str).tolist()
+        month_values = month_data.values.tolist()
+    else:
+        month_labels = []
+        month_values = []
+
     socketio.emit('progress', {'status': 'Completed ✅'})
-    print("Completed")
+
+    # 🔥 SEND EVERYTHING
+    socketio.emit('dashboard_update', {
+        'total_records': total_records,
+        'summary': summary,
+        'category_labels': category_labels,
+        'category_values': category_values,
+        'month_labels': month_labels,
+        'month_values': month_values
+    })
 
     return total_records, summary
 
@@ -329,14 +361,23 @@ def dashboard():
 
                 df = pd.read_csv(filepath)
 
-                df.columns = df.columns.str.strip()
+                # ✅ CLEAN COLUMN NAMES
+                df.columns = df.columns.str.strip().str.lower()
 
                 total_records = len(df)
+
+                # ===============================
+                # PREVIEW DATA
+                # ===============================
 
                 preview_df = df.head(10)
 
                 preview_columns = preview_df.columns.tolist()
                 preview_rows = preview_df.values.tolist()
+
+                # ===============================
+                # CATEGORY CHART
+                # ===============================
 
                 if "category" in df.columns:
 
@@ -344,22 +385,35 @@ def dashboard():
 
                     category_counts = counts.to_dict()
 
-                if "date" in df.columns:
+                # ===============================
+                # MONTHLY CHART (FIXED)
+                # ===============================
 
+                if "order date" in df.columns:
+
+                    # Convert to datetime
                     df["date"] = pd.to_datetime(df["date"], errors="coerce")
 
+                    # Convert to datetime
                     df["month"] = df["date"].dt.strftime("%b")
 
+                    # Count records per month
                     months = df["month"].value_counts()
 
+                    # Proper month order
                     month_order = [
                         "Jan","Feb","Mar","Apr","May","Jun",
                         "Jul","Aug","Sep","Oct","Nov","Dec"
                     ]
 
+                    # Arrange months correctly
                     months = months.reindex(month_order).dropna()
 
                     monthly_counts = months.to_dict()
+
+                # ===============================
+                # CORRELATION
+                # ===============================
 
                 corr_matrix = df.corr(numeric_only=True).round(2)
 

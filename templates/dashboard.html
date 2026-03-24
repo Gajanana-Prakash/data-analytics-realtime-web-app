@@ -16,7 +16,7 @@
     <div class="col-md-3">
         <div class="card p-3">
             <h5>Total Records</h5>
-            <h2>{{ total_records }}</h2>
+            <h2 id="totalRecords">{{ total_records }}</h2>
         </div>
     </div>
 
@@ -123,7 +123,7 @@ const monthValues = JSON.parse(monthCanvas.dataset.values);
 // ===== STEP 2: CREATE CHARTS =====
 
 // Category Chart
-new Chart(categoryCanvas, {
+const categoryChart = new Chart(categoryCanvas, {
     type: 'bar',
     data: {
         labels: categoryLabels,
@@ -135,7 +135,7 @@ new Chart(categoryCanvas, {
 });
 
 // Month Chart
-new Chart(monthCanvas, {
+const monthChart = new Chart(monthCanvas, {
     type: 'line',
     data: {
         labels: monthLabels,
@@ -190,6 +190,46 @@ socket.on('progress', function(data) {
         // Step 3: Update UI text
         progressBox.innerText = data.status;
     }
+});
+
+// ===============================
+// 🔥 DAY 5 – DASHBOARD UPDATE
+// ===============================
+socket.on('dashboard_update', function(data) {
+
+    console.log("🚀 Dashboard update:", data);
+
+    // ===============================
+    // UPDATE TOTAL RECORDS
+    // ===============================
+    const totalBox = document.getElementById("totalRecords");
+
+    if (totalBox) {
+        totalBox.innerText = data.total_records;
+    }
+
+    // ===============================
+    // 🔥 UPDATE CATEGORY CHART
+    // ===============================
+    if (data.category_labels && data.category_values) {
+
+        categoryChart.data.labels = data.category_labels;
+        categoryChart.data.datasets[0].data = data.category_values;
+
+        categoryChart.update();
+    }
+
+    // ===============================
+    // 🔥 UPDATE MONTH CHART
+    // ===============================
+    if (data.month_labels && data.month_values) {
+
+        monthChart.data.labels = data.month_labels;
+        monthChart.data.datasets[0].data = data.month_values;
+
+        monthChart.update();
+    }
+
 });
 
 </script>
