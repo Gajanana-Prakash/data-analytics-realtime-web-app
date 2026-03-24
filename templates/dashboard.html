@@ -154,34 +154,49 @@ new Chart(monthCanvas, {
 
 <script>
 
+// ===============================
+// STEP 1: CONNECT TO SERVER
+// ===============================
 const socket = io();
 
-// When connected
+// ===============================
+// STEP 2: CHECK CONNECTION
+// ===============================
 socket.on('connect', function() {
-    console.log("Connected to server");
+    console.log("✅ Connected to server");
 });
 
-// Test message
+// ===============================
+// STEP 3: DEBUG MESSAGE (OPTIONAL)
+// ===============================
 socket.on('message', function(data) {
-    console.log("Message from server:", data);
+    console.log("📩 Message from server:", data);
 });
 
-// ✅ PROGRESS LISTENER
+// ===============================
+// STEP 4: MAIN PART (🔥 IMPORTANT)
+// LISTEN FOR PROGRESS EVENTS
+// ===============================
 socket.on('progress', function(data) {
-    console.log("Progress:", data.status); // debug
 
+    console.log("📊 Progress received:", data); // Debug
+
+    // Step 1: Get progress box
     const progressBox = document.getElementById("progress");
 
+    // Step 2: Check if element exists
     if (progressBox) {
+
+        // Step 3: Update UI text
         progressBox.innerText = data.status;
     }
 });
 
-
-
-// ✅ REAL UI NOTIFICATION
-
 </script>
+
+
+<!-- ✅ REAL UI NOTIFICATION -->
+
 
 <!-- ✅ SESSION-BASED NOTIFICATION (FINAL FIX) -->
 
