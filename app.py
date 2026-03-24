@@ -123,9 +123,25 @@ def process_data(filepath):
     if 'order date' in df.columns:
         df['order date'] = pd.to_datetime(df['order date'], errors='coerce')
 
-        month_data = df.groupby(df['order date'].dt.to_period('M')).size()
+        # Convert to datetime
+        df['order date'] = pd.to_datetime(df['order date'], errors='coerce')
 
-        month_labels = month_data.index.astype(str).tolist()
+        # Extract month name
+        df['month'] = df['order date'].dt.strftime('%b')
+
+        # Count values
+        month_data = df['month'].value_counts()
+
+        # Sort months properly
+        month_order = [
+            "Jan","Feb","Mar","Apr","May","Jun",
+            "Jul","Aug","Sep","Oct","Nov","Dec"
+        ]
+
+        month_data = month_data.reindex(month_order).dropna()
+
+        # Final labels and values
+        month_labels = month_data.index.tolist()
         month_values = month_data.values.tolist()
     else:
         month_labels = []
@@ -357,6 +373,7 @@ def dashboard():
 
         if os.path.exists(filepath):
 
+          
             try:
 
                 df = pd.read_csv(filepath)
@@ -385,30 +402,32 @@ def dashboard():
 
                     category_counts = counts.to_dict()
 
+                
                 # ===============================
                 # MONTHLY CHART (FIXED)
                 # ===============================
 
                 if "order date" in df.columns:
 
-                    # Convert to datetime
-                    df["date"] = pd.to_datetime(df["date"], errors="coerce")
+                    # ✅ Step 1: Convert column to datetime
+                    df["order date"] = pd.to_datetime(df["order date"], errors="coerce")
 
-                    # Convert to datetime
-                    df["month"] = df["date"].dt.strftime("%b")
+                    # ✅ Step 2: Extract month (Jan, Feb, etc.)
+                    df["month"] = df["order date"].dt.strftime("%b")
 
-                    # Count records per month
+                    # ✅ Step 3: Count records per month
                     months = df["month"].value_counts()
 
-                    # Proper month order
+                    # ✅ Step 4: Define correct month order
                     month_order = [
                         "Jan","Feb","Mar","Apr","May","Jun",
                         "Jul","Aug","Sep","Oct","Nov","Dec"
                     ]
 
-                    # Arrange months correctly
+                    # ✅ Step 5: Arrange months properly
                     months = months.reindex(month_order).dropna()
 
+                    # ✅ Step 6: Convert to dictionary
                     monthly_counts = months.to_dict()
 
                 # ===============================

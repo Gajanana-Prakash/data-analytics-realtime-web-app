@@ -49,6 +49,17 @@
     Waiting for process...
 </div>
 
+<div id="summaryBox" style="
+    background:#ffffff;
+    padding:15px;
+    margin-bottom:20px;
+    border-radius:5px;
+    border:1px solid #ddd;
+">
+    <b>Summary:</b>
+    <div id="summaryContent">Waiting for summary...</div>
+</div>
+
 <!-- Charts -->
 
 <div class="row">
@@ -209,24 +220,47 @@ socket.on('dashboard_update', function(data) {
     }
 
     // ===============================
+    // 🔥 ADD SUMMARY HERE (IMPORTANT)
+    // ===============================
+    const summaryBox = document.getElementById("summaryContent");
+
+    if (summaryBox && data.summary) {
+
+        try {
+            const summaryData = JSON.parse(data.summary);
+
+            summaryBox.innerText = JSON.stringify(summaryData, null, 2);
+        } catch (e) {
+            summaryBox.innerText = "Summary error";
+        }
+    }
+
+
+    // ===============================
     // 🔥 UPDATE CATEGORY CHART
     // ===============================
-    if (data.category_labels && data.category_values) {
-
+    if (
+        data &&
+        Array.isArray(data.category_labels) &&
+        Array.isArray(data.category_values) &&
+        data.category_labels.length > 0
+    ) {
         categoryChart.data.labels = data.category_labels;
         categoryChart.data.datasets[0].data = data.category_values;
-
         categoryChart.update();
     }
 
     // ===============================
     // 🔥 UPDATE MONTH CHART
     // ===============================
-    if (data.month_labels && data.month_values) {
-
+    if (
+        data &&
+        Array.isArray(data.month_labels) &&
+        Array.isArray(data.month_values) &&
+        data.month_labels.length > 0
+    ) {
         monthChart.data.labels = data.month_labels;
         monthChart.data.datasets[0].data = data.month_values;
-
         monthChart.update();
     }
 
