@@ -86,31 +86,32 @@ import time  # ✅ add this at top also (important)
 
 def process_data(filepath):
 
-    socketio.emit('progress', {'status': 'Processing started'})
+    # Step 1: Start
+    socketio.emit('progress', {'percent': 10, 'status': 'Processing started'})
     time.sleep(1)
 
     df = pd.read_csv(filepath)
 
-    # ✅ FIX: standardize column names
+    # Clean column names
     df.columns = df.columns.str.strip().str.lower()
 
-    socketio.emit('progress', {'status': 'Calculating summary'})
+    # Step 2
+    socketio.emit('progress', {'percent': 30, 'status': 'Cleaning data'})
     time.sleep(1)
 
+    # Step 3
     summary = df.describe().to_json()
-
-    socketio.emit('progress', {'status': 'Generating insights'})
+    socketio.emit('progress', {'percent': 50, 'status': 'Calculating summary'})
     time.sleep(1)
 
+    # Step 4
     total_records = len(df)
+    socketio.emit('progress', {'percent': 70, 'status': 'Generating insights'})
+    time.sleep(1)
 
     # ===============================
-    # 🔥 CREATE CHART DATA
+    # CATEGORY CHART
     # ===============================
-
-    # Example (adjust column names as per your dataset)
-
-    # Category Chart
     if 'category' in df.columns:
         category_data = df['category'].value_counts()
         category_labels = category_data.index.tolist()
@@ -119,37 +120,30 @@ def process_data(filepath):
         category_labels = []
         category_values = []
 
-    # Monthly Chart
+    # ===============================
+    # MONTH CHART
+    # ===============================
     if 'order date' in df.columns:
         df['order date'] = pd.to_datetime(df['order date'], errors='coerce')
-
-        # Convert to datetime
-        df['order date'] = pd.to_datetime(df['order date'], errors='coerce')
-
-        # Extract month name
         df['month'] = df['order date'].dt.strftime('%b')
 
-        # Count values
         month_data = df['month'].value_counts()
 
-        # Sort months properly
-        month_order = [
-            "Jan","Feb","Mar","Apr","May","Jun",
-            "Jul","Aug","Sep","Oct","Nov","Dec"
-        ]
+        month_order = ["Jan","Feb","Mar","Apr","May","Jun",
+                       "Jul","Aug","Sep","Oct","Nov","Dec"]
 
         month_data = month_data.reindex(month_order).dropna()
 
-        # Final labels and values
         month_labels = month_data.index.tolist()
         month_values = month_data.values.tolist()
     else:
         month_labels = []
         month_values = []
 
-    socketio.emit('progress', {'status': 'Completed ✅'})
+    # Step 5: Complete
+    socketio.emit('progress', {'percent': 100, 'status': 'Completed ✅'})
 
-    # 🔥 SEND EVERYTHING
+    # 🔥 Send dashboard update
     socketio.emit('dashboard_update', {
         'total_records': total_records,
         'summary': summary,
@@ -253,66 +247,80 @@ def logout():
 # UPLOAD PAGE
 # ==============================
 
-@app.route("/upload", methods=["GET","POST"])
+@app.route("/upload", methods=["POST"])
 def upload():
 
+    # =========================
+    # 1. CHECK LOGIN
+    # =========================
     if "user_id" not in session:
-        return redirect("/login")
+        return jsonify({"error": "Not logged in"}), 401
 
-    if request.method == "POST":
+    # =========================
+    # 2. GET FILE
+    # =========================
+    file = request.files.get("file")
 
-        file = request.files.get("file")
+    if not file:
+        return jsonify({"error": "No file uploaded"}), 400
 
-        if not file:
-            return "No file uploaded"
+    if file.filename == "":
+        return jsonify({"error": "No file selected"}), 400
 
-        if file.filename == "":
-            return "No file selected"
+    if not file.filename.lower().endswith(".csv"):
+        return jsonify({"error": "Only CSV allowed"}), 400
 
-        if not file.filename.lower().endswith(".csv"):
-            return "Only CSV files allowed"
+    try:
+        print("Step 1: Upload started")
 
-        try:
-            print("Step 1: Upload started")
+        # =========================
+        # 3. SAVE FILE
+        # =========================
+        filename = secure_filename(file.filename)
+        unique_filename = str(uuid.uuid4()) + "_" + filename
 
-            filename = secure_filename(file.filename)
-            unique_filename = str(uuid.uuid4()) + "_" + filename
+        filepath = os.path.join(
+            app.config["UPLOAD_FOLDER"],
+            unique_filename
+        )
 
-            filepath = os.path.join(
-                app.config["UPLOAD_FOLDER"],
-                unique_filename
-            )
+        file.save(filepath)
+        print("Step 2: File saved")
 
-            file.save(filepath)
-            print("Step 2: File saved")
+        # =========================
+        # 4. SAVE TO DATABASE
+        # =========================
+        dataset = Dataset(
+            filename=unique_filename,
+            upload_date=datetime.now(),
+            user_id=session["user_id"]
+        )
 
-            # 🔥 CALL REAL-TIME PROCESS FUNCTION
-            total_records, summary = process_data(filepath)
+        db.session.add(dataset)
+        db.session.commit()
+        print("Step 3: Database saved")
 
-            dataset = Dataset(
-                filename=unique_filename,
-                upload_date=datetime.now(),
-                user_id=session["user_id"]
-            )
+        # =========================
+        # 5. BACKGROUND PROCESS (🔥 IMPORTANT)
+        # =========================
+        socketio.start_background_task(
+            process_data,
+            filepath
+        )
 
-            db.session.add(dataset)
-            db.session.commit()
-            print("Step 3: Database saved")
+        print("Step 4: Background processing started")
 
-            # 🔥 SEND NOTIFICATION
-            session["notification"] = "Dataset uploaded successfully"
+        # =========================
+        # 6. RETURN JSON (NO REDIRECT)
+        # =========================
+        return "OK"
 
-            print("Step 4: Notification sent")
+    except Exception as e:
+        print("Upload Error:", e)
 
-            return redirect("/dashboard")
-
-        except Exception as e:
-
-            print("Upload Error:", e)
-
-            return "Upload failed"
-
-    return render_template("upload.html")
+        return jsonify({
+            "error": "Upload failed"
+        }), 500
 
 
 # ==============================
@@ -445,11 +453,10 @@ def dashboard():
 
                 print("Error loading dataset:", e)
 
-    notification = session.pop("notification", None)
+    
 
     return render_template(
     "dashboard.html",
-    notification=notification,   # ✅ ADD THIS
     datasets=datasets,
     selected_dataset=selected_dataset.id if selected_dataset else None,
     total_records=total_records,

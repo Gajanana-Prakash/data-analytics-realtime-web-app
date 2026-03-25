@@ -37,16 +37,60 @@
 
 <br>
 
+<br>
+
+<!-- =============================== -->
+<!-- 🔥 UPLOAD DATASET -->
+<!-- =============================== -->
+
+<h4>Upload Dataset</h4>
+
+<form 
+    id="uploadForm" 
+    action="/upload" 
+    method="POST" 
+    enctype="multipart/form-data"
+>
+
+    <!-- File Input -->
+    <input 
+        type="file" 
+        id="fileInput" 
+        name="file"
+        accept=".csv" 
+        required
+    >
+
+    <!-- Upload Button -->
+    <button type="submit">Upload</button>
+
+</form>
+
+<br>
+
+
 <!-- ✅ PROGRESS BOX (ADD HERE) -->
 
-<div id="progress" style="
-    background:#f1f1f1;
-    padding:10px;
-    margin-bottom:15px;
-    border-radius:5px;
-    font-weight:bold;
-">
-    Waiting for process...
+<div style="margin-bottom:15px;">
+
+    <!-- Progress Text -->
+    <div id="progress-text" style="margin-bottom:5px; font-weight:bold;">
+        Waiting for process...
+    </div>
+
+    <!-- Progress Bar Background -->
+    <div style="width:100%; background:#ddd; border-radius:10px; overflow:hidden;">
+
+        <!-- Moving Progress Bar -->
+        <div id="progress-bar" style="
+            width:0%;
+            height:20px;
+            background:linear-gradient(90deg, #28a745, #00c851);
+            transition: width 0.5s ease;
+        "></div>
+
+    </div>
+
 </div>
 
 <div id="summaryBox" style="
@@ -190,17 +234,21 @@ socket.on('message', function(data) {
 // ===============================
 socket.on('progress', function(data) {
 
-    console.log("📊 Progress received:", data); // Debug
+    console.log("📊 Progress:", data);
 
-    // Step 1: Get progress box
-    const progressBox = document.getElementById("progress");
+    const bar = document.getElementById("progress-bar");
+    const text = document.getElementById("progress-text");
 
-    // Step 2: Check if element exists
-    if (progressBox) {
-
-        // Step 3: Update UI text
-        progressBox.innerText = data.status;
+    // ✅ Update progress bar width
+    if (bar && data.percent !== undefined) {
+        bar.style.width = data.percent + "%";
     }
+
+    // ✅ Update progress text
+    if (text && data.status) {
+        text.innerText = data.status + " (" + data.percent + "%)";
+    }
+
 });
 
 // ===============================
@@ -274,50 +322,78 @@ socket.on('dashboard_update', function(data) {
 
 <!-- ✅ SESSION-BASED NOTIFICATION (FINAL FIX) -->
 
+
 <script>
 
-// ✅ Get notification from Flask safely
-const message = JSON.parse('{{ notification | tojson | safe }}');
+// ===============================
+// 🔥 STEP 3 – AJAX FILE UPLOAD
+// ===============================
 
-// Debug (important)
-console.log("Notification:", message);
+document.getElementById("uploadForm").addEventListener("submit", function(e) {
 
-// ✅ Show notification
-if (message) {
+    // 🚫 Stop page reload
+    e.preventDefault();
 
-    const box = document.createElement("div");
+    console.log("🚀 Upload started...");
 
-    box.innerText = message;
+    // 📁 Get file
+    const fileInput = document.getElementById("fileInput");
+    const file = fileInput.files[0];
 
-    // 🎨 PROFESSIONAL STYLE
-    box.style.position = "fixed";
-    box.style.top = "20px";
-    box.style.right = "20px";
-    box.style.background = "#28a745";
-    box.style.color = "white";
-    box.style.padding = "12px 20px";
-    box.style.borderRadius = "8px";
-    box.style.fontWeight = "bold";
-    box.style.boxShadow = "0 4px 10px rgba(0,0,0,0.2)";
-    box.style.zIndex = "9999";
+    // ❌ If no file
+    if (!file) {
+        alert("Please select a file");
+        return;
+    }
 
-    // ✨ Animation
-    box.style.opacity = "0";
-    box.style.transition = "opacity 0.5s ease";
+    // 📦 Create FormData
+    const formData = new FormData();
+    formData.append("file", file);
 
-    document.body.appendChild(box);
+    // 🔄 Reset progress UI
+    const bar = document.getElementById("progress-bar");
+    const text = document.getElementById("progress-text");
 
-    // Fade in
-    setTimeout(() => {
-        box.style.opacity = "1";
-    }, 100);
+    if (bar) bar.style.width = "0%";
+    if (text) text.innerText = "Uploading... (0%)";
 
-    // Fade out
-    setTimeout(() => {
-        box.style.opacity = "0";
-        setTimeout(() => box.remove(), 500);
-    }, 3000);
-}
+    // 🌐 Send request to Flask
+    fetch("/upload", {
+        method: "POST",
+        body: formData
+    })
+    .then(response => {
+
+        // ⚠️ IMPORTANT FIX
+        // Your Flask returns redirect → not JSON
+        if (!response.ok) {
+            throw new Error("Upload failed");
+        }
+
+        return response.text(); // NOT json
+    })
+    .then(data => {
+
+        console.log("✅ Upload response received");
+
+        // Optional message
+        const text = document.getElementById("progress-text");
+        if (text) {
+            text.innerText = "Processing started...";
+        }
+
+        // 🚀 After this → SOCKET will handle updates
+
+    })
+    .catch(error => {
+
+        console.error("❌ Upload Error:", error);
+
+        alert("Upload failed. Check console.");
+
+    });
+
+});
 
 </script>
 
