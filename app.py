@@ -339,6 +339,11 @@ def upload_file():
     except Exception as e:
         print("Upload Error:", e)
 
+        # 🔥 SEND ERROR TO FRONTEND IN REAL-TIME
+        socketio.emit('error', {
+            'message': 'Upload failed. Please try again.'
+        })
+
         return jsonify({
             "error": "Upload failed"
         }), 500

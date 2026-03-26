@@ -229,6 +229,22 @@ socket.on('message', function(data) {
 });
 
 // ===============================
+// ❌ ERROR HANDLING (NEW)
+// ===============================
+socket.on('error', function(data) {
+
+    console.log("❌ Error:", data);
+
+    const text = document.getElementById("progress-text");
+
+    if (text) {
+        text.innerText = "❌ " + data.message;
+        text.style.color = "red";
+    }
+
+});
+
+// ===============================
 // STEP 4: MAIN PART (🔥 IMPORTANT)
 // LISTEN FOR PROGRESS EVENTS
 // ===============================
@@ -246,7 +262,14 @@ socket.on('progress', function(data) {
 
     // ✅ Update progress text
     if (text && data.status) {
+
         text.innerText = data.status + " (" + data.percent + "%)";
+
+        // ✅ FINAL SUCCESS STYLE
+        if (data.percent === 100) {
+            text.style.color = "green";
+        }
+
     }
 
 });
@@ -334,6 +357,12 @@ document.getElementById("uploadForm").addEventListener("submit", function(e) {
         return;
     }
 
+    // ✅ Optional: file type check
+    if (!file.name.endsWith(".csv")) {
+        alert("Only CSV files allowed");
+        return;
+    }
+
     // 📦 Create FormData
     const formData = new FormData();
     formData.append("file", file);
@@ -346,6 +375,16 @@ document.getElementById("uploadForm").addEventListener("submit", function(e) {
     if (text) text.innerText = "Uploading... (0%)";
 
     // 🌐 Send request to Flask
+
+    // 🔒 DISABLE BUTTON (NEW)
+    const button = document.querySelector("#uploadForm button");
+
+    if (button) {
+        button.disabled = true;
+        button.innerText = "Uploading...";
+    }
+
+
     fetch("/upload-file", {
         method: "POST",
         body: formData
@@ -358,27 +397,44 @@ document.getElementById("uploadForm").addEventListener("submit", function(e) {
             throw new Error("Upload failed");
         }
 
-        return response.text(); // NOT json
+        return response.text() || ""; // NOT json
     })
     .then(data => {
 
-    console.log("✅ Upload response received");
+        console.log("✅ Upload response received");
 
-    const bar = document.getElementById("progress-bar");
-    const text = document.getElementById("progress-text");
+        
+        // ✅ Small progress to show upload completed
+        if (bar) bar.style.width = "5%";
 
-    // ✅ Small progress to show upload completed
-    if (bar) bar.style.width = "5%";
+        // ✅ Clear message for user
+        if (text) {
+            text.style.color = "black";  // reset first
+            text.innerText = "✅ File uploaded successfully. Processing started...";
+            text.style.color = "green";
+        }
 
-    // ✅ Clear message for user
-    if (text) text.innerText = "File uploaded. Processing...";
+        // 🔓 ENABLE BUTTON AGAIN (NEW)
+        if (button) {
+            button.disabled = false;
+            button.innerText = "Upload";
+        }
 
     })
     .catch(error => {
 
         console.error("❌ Upload Error:", error);
 
-        alert("Upload failed. Check console.");
+        if (text) {
+            text.innerText = "❌ Upload failed. Please try again.";
+            text.style.color = "red";
+        }
+
+        // 🔓 ENABLE BUTTON AGAIN (NEW)
+        if (button) {
+            button.disabled = false;
+            button.innerText = "Upload";
+        }
 
     });
 
