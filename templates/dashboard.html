@@ -47,7 +47,7 @@
 
 <form 
     id="uploadForm" 
-    action="/upload" 
+    action="/upload-file" 
     method="POST" 
     enctype="multipart/form-data"
 >
@@ -275,9 +275,7 @@ socket.on('dashboard_update', function(data) {
     if (summaryBox && data.summary) {
 
         try {
-            const summaryData = JSON.parse(data.summary);
-
-            summaryBox.innerText = JSON.stringify(summaryData, null, 2);
+            summaryBox.innerHTML = data.summary;
         } catch (e) {
             summaryBox.innerText = "Summary error";
         }
@@ -287,29 +285,19 @@ socket.on('dashboard_update', function(data) {
     // ===============================
     // 🔥 UPDATE CATEGORY CHART
     // ===============================
-    if (
-        data &&
-        Array.isArray(data.category_labels) &&
-        Array.isArray(data.category_values) &&
-        data.category_labels.length > 0
-    ) {
-        categoryChart.data.labels = data.category_labels;
-        categoryChart.data.datasets[0].data = data.category_values;
-        categoryChart.update();
+    if (data.category_labels && data.category_values) {
+    categoryChart.data.labels = data.category_labels;
+    categoryChart.data.datasets[0].data = data.category_values;
+    categoryChart.update();
     }
 
     // ===============================
     // 🔥 UPDATE MONTH CHART
     // ===============================
-    if (
-        data &&
-        Array.isArray(data.month_labels) &&
-        Array.isArray(data.month_values) &&
-        data.month_labels.length > 0
-    ) {
-        monthChart.data.labels = data.month_labels;
-        monthChart.data.datasets[0].data = data.month_values;
-        monthChart.update();
+    if (data.month_labels && data.month_values) {
+    monthChart.data.labels = data.month_labels;
+    monthChart.data.datasets[0].data = data.month_values;
+    monthChart.update();
     }
 
 });
@@ -358,7 +346,7 @@ document.getElementById("uploadForm").addEventListener("submit", function(e) {
     if (text) text.innerText = "Uploading... (0%)";
 
     // 🌐 Send request to Flask
-    fetch("/upload", {
+    fetch("/upload-file", {
         method: "POST",
         body: formData
     })
@@ -374,15 +362,16 @@ document.getElementById("uploadForm").addEventListener("submit", function(e) {
     })
     .then(data => {
 
-        console.log("✅ Upload response received");
+    console.log("✅ Upload response received");
 
-        // Optional message
-        const text = document.getElementById("progress-text");
-        if (text) {
-            text.innerText = "Processing started...";
-        }
+    const bar = document.getElementById("progress-bar");
+    const text = document.getElementById("progress-text");
 
-        // 🚀 After this → SOCKET will handle updates
+    // ✅ Small progress to show upload completed
+    if (bar) bar.style.width = "5%";
+
+    // ✅ Clear message for user
+    if (text) text.innerText = "File uploaded. Processing...";
 
     })
     .catch(error => {

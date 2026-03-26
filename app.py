@@ -2,6 +2,9 @@
 # IMPORTS
 # ==============================
 
+import eventlet
+eventlet.monkey_patch()
+
 import os
 import uuid
 import time
@@ -21,7 +24,7 @@ from werkzeug.utils import secure_filename
 # ==============================
 
 app = Flask(__name__)
-socketio = SocketIO(app, cors_allowed_origins="*")
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode="eventlet")
 
 app.config["SECRET_KEY"] = "secretkey"
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
@@ -100,7 +103,7 @@ def process_data(filepath):
     time.sleep(1)
 
     # Step 3
-    summary = df.describe().to_json()
+    summary = df.describe().to_html()
     socketio.emit('progress', {'percent': 50, 'status': 'Calculating summary'})
     time.sleep(1)
 
@@ -247,8 +250,26 @@ def logout():
 # UPLOAD PAGE
 # ==============================
 
-@app.route("/upload", methods=["POST"])
-def upload():
+# ==============================
+# UPLOAD PAGE (GET)
+# ==============================
+
+@app.route("/upload", methods=["GET"])
+def upload_page():
+
+    # 🔐 Check if user is logged in
+    if "user_id" not in session:
+        return redirect("/login")
+
+    # 👉 If logged in, go to dashboard
+    return redirect("/dashboard")
+
+# ==============================
+# UPLOAD API (POST)
+# ==============================
+
+@app.route("/upload-file", methods=["POST"])
+def upload_file():
 
     # =========================
     # 1. CHECK LOGIN
