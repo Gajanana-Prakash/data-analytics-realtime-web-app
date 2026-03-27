@@ -1,65 +1,110 @@
-/* Page styling */
-body{
-font-family: Arial, sans-serif;
-background:#f5f5f5;
-margin:40px;
+/* ========================= */
+/* GLOBAL PAGE STYLE */
+/* ========================= */
+
+body {
+    font-family: Arial, sans-serif;
+    background: #f5f7fa;   /* smoother background */
+    margin: 20px;
 }
 
-/* Main heading */
-h1{
-color:#333;
+/* ========================= */
+/* HEADINGS */
+/* ========================= */
+
+h1, h2, h4, h5 {
+    color: #333;
 }
 
-/* Dashboard card container */
-.container{
-display:flex;
-gap:20px;
-flex-wrap:wrap;
+/* ========================= */
+/* CARD DESIGN */
+/* ========================= */
+
+.card {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease;
 }
 
-/* Summary cards */
-.card{
-background:white;
-padding:20px;
-border-radius:10px;
-box-shadow:0 2px 8px rgba(0,0,0,0.1);
-flex:1;
-min-width:200px;
+.card:hover {
+    transform: translateY(-3px);
 }
 
-/* Chart section cards */
-.chart-card{
-background:white;
-padding:20px;
-margin-top:20px;
-border-radius:10px;
-box-shadow:0 2px 8px rgba(0,0,0,0.1);
+/* ========================= */
+/* CHART SECTION */
+/* ========================= */
+
+.chart-card {
+    background: white;
+    padding: 20px;
+    margin-top: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
-/* Table styling */
-table{
-margin-top:20px;
-width:100%;
-border-collapse:collapse;
+/* ========================= */
+/* TABLE STYLING */
+/* ========================= */
+
+table {
+    margin-top: 20px;
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
 }
 
-/* Table cells */
-td, th{
-padding:8px;
-border:1px solid #ddd;
+td, th {
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: center;
 }
 
-/* Buttons */
-button{
-background:#2196F3;
-color:white;
-border:none;
-padding:10px 15px;
-border-radius:5px;
-cursor:pointer;
+/* ========================= */
+/* BUTTONS */
+/* ========================= */
+
+button {
+    background: #2196F3;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s ease;
 }
 
-/* Button hover effect */
-button:hover{
-background:#1976D2;
+button:hover {
+    background: #1976D2;
+}
+
+/* ========================= */
+/* PROGRESS BAR */
+/* ========================= */
+
+#progress-bar {
+    transition: width 0.4s ease;
+}
+
+/* ========================= */
+/* SUMMARY BOX */
+/* ========================= */
+
+#summaryBox {
+    background: #ffffff;
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+}
+
+/* ========================= */
+/* RESPONSIVE */
+/* ========================= */
+
+@media (max-width: 768px) {
+    body {
+        margin: 10px;
+    }
 }

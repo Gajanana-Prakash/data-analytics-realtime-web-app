@@ -2,8 +2,6 @@
 # IMPORTS
 # ==============================
 
-import eventlet
-eventlet.monkey_patch()
 
 import os
 import uuid
@@ -15,6 +13,7 @@ from flask import Flask, request, jsonify, redirect, render_template, session
 # type: ignore yellow error
 from flask_socketio import SocketIO
 from flask_sqlalchemy import SQLAlchemy
+from socket_events import register_socket_events  # ✅ NEW
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 
@@ -26,7 +25,10 @@ from werkzeug.utils import secure_filename
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode="eventlet")
 
-app.config["SECRET_KEY"] = "secretkey"
+# ✅ REGISTER SOCKET EVENTS (NEW)
+register_socket_events(socketio)
+
+app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "supersecret123")
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
@@ -85,88 +87,140 @@ def analyze_dataset(filepath):
 # REAL-TIME PROCESSING FUNCTION
 # ==============================
 
-import time  # ✅ add this at top also (important)
 
-def process_data(filepath):
+def process_data(filepath, user_id, dataset_id):
 
-    # Step 1: Start
-    socketio.emit('progress', {'percent': 10, 'status': 'Processing started'})
+    # ==========================================
+    # STEP 1: Notify frontend that processing started
+    # ==========================================
+    socketio.emit('progress', {
+        'percent': 10,
+        'status': 'Processing started'
+    })
     time.sleep(1)
 
+    # ==========================================
+    # STEP 2: Load CSV file into pandas DataFrame
+    # ==========================================
     df = pd.read_csv(filepath)
 
-    # Clean column names
+    # ==========================================
+    # STEP 3: Clean column names (remove spaces, lowercase)
+    # ==========================================
     df.columns = df.columns.str.strip().str.lower()
 
-    # Step 2
-    socketio.emit('progress', {'percent': 30, 'status': 'Cleaning data'})
+    socketio.emit('progress', {
+        'percent': 30,
+        'status': 'Cleaning data'
+    })
     time.sleep(1)
 
-    # Step 3
+    # ==========================================
+    # STEP 4: Generate statistical summary (mean, std, etc.)
+    # ==========================================
     summary = df.describe().to_html()
-    socketio.emit('progress', {'percent': 50, 'status': 'Calculating summary'})
+
+    socketio.emit('progress', {
+        'percent': 50,
+        'status': 'Calculating summary'
+    })
     time.sleep(1)
 
-    # Step 4
+    # ==========================================
+    # STEP 5: Calculate total number of records
+    # ==========================================
     total_records = len(df)
-    socketio.emit('progress', {'percent': 70, 'status': 'Generating insights'})
+
+    socketio.emit('progress', {
+        'percent': 70,
+        'status': 'Generating insights'
+    })
     time.sleep(1)
 
-    # ===============================
-    # CATEGORY CHART
-    # ===============================
+    # ==========================================
+    # STEP 6: Generate category-wise data (Bar Chart)
+    # ==========================================
     if 'category' in df.columns:
+
         category_data = df['category'].value_counts()
+
         category_labels = category_data.index.tolist()
         category_values = category_data.values.tolist()
+
     else:
         category_labels = []
         category_values = []
 
-    # ===============================
-    # MONTH CHART
-    # ===============================
+    # ==========================================
+    # STEP 7: Generate monthly trend data (Line Chart)
+    # ==========================================
     if 'order date' in df.columns:
+
         df['order date'] = pd.to_datetime(df['order date'], errors='coerce')
+
         df['month'] = df['order date'].dt.strftime('%b')
 
         month_data = df['month'].value_counts()
 
         month_order = ["Jan","Feb","Mar","Apr","May","Jun",
-                       "Jul","Aug","Sep","Oct","Nov","Dec"]
+                   "Jul","Aug","Sep","Oct","Nov","Dec"]
 
         month_data = month_data.reindex(month_order).dropna()
 
         month_labels = month_data.index.tolist()
         month_values = month_data.values.tolist()
+
     else:
         month_labels = []
         month_values = []
 
-    # Step 5: Complete
-    socketio.emit('progress', {'percent': 100, 'status': 'Completed ✅'})
+    # ==========================================
+    # 🔥 STEP 4: DEBUG LOGGING (VERY IMPORTANT)
+    # ==========================================
+    print("\n================ DEBUG OUTPUT ================")
 
-    # 🔥 Send dashboard update
+    print("📊 Category Labels:", category_labels)
+    print("📊 Category Values:", category_values)
+
+    print("📈 Month Labels:", month_labels)
+    print("📈 Month Values:", month_values)
+
+    print("================================================\n")
+
+    # ==========================================
+    # STEP 8: Notify frontend that processing is complete
+    # ==========================================
+    socketio.emit('progress', {
+        'percent': 100,
+        'status': 'Completed ✅'
+    })
+
+    # ==========================================
+    # STEP 9: Send processed data to dashboard (REAL-TIME)
+    # ==========================================
     socketio.emit('dashboard_update', {
+
+        # Identify dataset
+        'dataset_id': dataset_id,
+
+        # Summary data
         'total_records': total_records,
         'summary': summary,
+
+        # Category chart data
         'category_labels': category_labels,
         'category_values': category_values,
+
+        # Monthly chart data
         'month_labels': month_labels,
         'month_values': month_values
     })
 
+    # ==========================================
+    # STEP 10: Return values (optional backend use)
+    # ==========================================
     return total_records, summary
 
-
-# ==============================
-# SOCKET.IO EVENTS
-# ==============================
-
-@socketio.on('connect')
-def handle_connect():
-    print("Client connected")
-    socketio.emit('message', {'data': 'Connected successfully'})
 
 
 # ==============================
@@ -326,7 +380,9 @@ def upload_file():
         # =========================
         socketio.start_background_task(
             process_data,
-            filepath
+            filepath,
+            session["user_id"],
+            dataset.id
         )
 
         print("Step 4: Background processing started")
@@ -334,18 +390,25 @@ def upload_file():
         # =========================
         # 6. RETURN JSON (NO REDIRECT)
         # =========================
-        return "OK"
-
-    except Exception as e:
-        print("Upload Error:", e)
-
-        # 🔥 SEND ERROR TO FRONTEND IN REAL-TIME
-        socketio.emit('error', {
-            'message': 'Upload failed. Please try again.'
+        return jsonify({
+            "message": "File uploaded successfully",
+            "status": "success"
         })
 
+    except Exception as e:
+
+        # ✅ Print real error in terminal
+        print("❌ Upload Error:", e)
+
+        # ✅ Send real error to frontend (WebSocket)
+        socketio.emit('upload_error', {
+            'message': str(e)
+        })
+
+        # ✅ Return proper JSON error response
         return jsonify({
-            "error": "Upload failed"
+            "status": "error",
+            "message": str(e)
         }), 500
 
 
@@ -563,7 +626,7 @@ if __name__ == "__main__":
     with app.app_context():
         db.create_all()
 
-    socketio.run(app, debug=True)
+    socketio.run(app, debug=True, allow_unsafe_werkzeug=True)
 
 
    
