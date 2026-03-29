@@ -1,19 +1,28 @@
 {% extends "base.html" %}
+{% block title %}Analytics — {{ dataset.original_name }}{% endblock %}
 
 {% block content %}
+<div class="container-fluid px-4 py-4">
 
-<h3>Dataset Analytics</h3>
+    <div class="d-flex align-items-center gap-3 mb-4">
+        <a href="{{ url_for('dashboard') }}" class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back
+        </a>
+        <div>
+            <h3 class="mb-0">{{ dataset.original_name }}</h3>
+            <small class="text-muted">Uploaded {{ dataset.upload_date.strftime('%d %b %Y, %H:%M') }}</small>
+        </div>
+    </div>
 
-<div class="card p-3">
-
-<h5>Total Records: {{ total_records }}</h5>
+    <div class="section-card">
+        <div class="section-header">
+            <h5 class="section-title"><i class="bi bi-calculator"></i> Statistical Summary</h5>
+            <span class="badge bg-primary">{{ total_records }} records</span>
+        </div>
+        <div class="table-scroll">
+            {{ summary | safe }}
+        </div>
+    </div>
 
 </div>
-
-<br>
-
-<h4>Statistical Summary</h4>
-
-{{ summary|safe }}
-
 {% endblock %}

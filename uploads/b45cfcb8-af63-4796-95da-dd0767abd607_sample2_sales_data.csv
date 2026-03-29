@@ -1,0 +1,106 @@
+Date,Product,Category,Price,Quantity,Discount,Sales,Region,Customer_Type
+2024-01-05,Laptop Pro,Electronics,85000,2,5,161500,North,Corporate
+2024-01-08,Office Chair,Furniture,12000,5,10,54000,South,Retail
+2024-01-12,Wireless Mouse,Electronics,1500,20,0,30000,East,Retail
+2024-01-15,Notebook Pack,Stationery,250,100,5,23750,West,Corporate
+2024-01-18,Standing Desk,Furniture,25000,3,8,69000,North,Corporate
+2024-01-22,USB Hub,Electronics,2200,15,0,33000,South,Retail
+2024-01-25,Pen Set,Stationery,150,200,0,30000,East,Retail
+2024-01-28,Monitor 27inch,Electronics,32000,4,5,121600,West,Corporate
+2024-02-02,Laptop Pro,Electronics,85000,3,5,242250,North,Corporate
+2024-02-05,Filing Cabinet,Furniture,8500,6,10,45900,South,Retail
+2024-02-09,Keyboard Mech,Electronics,5500,10,0,55000,East,Corporate
+2024-02-12,Sticky Notes,Stationery,80,500,0,40000,West,Retail
+2024-02-15,Ergonomic Chair,Furniture,18000,4,8,66240,North,Corporate
+2024-02-18,Webcam HD,Electronics,3500,12,5,39900,South,Retail
+2024-02-22,Marker Set,Stationery,200,150,0,30000,East,Retail
+2024-02-26,Tablet 10inch,Electronics,28000,5,3,135800,West,Corporate
+2024-03-01,Laptop Air,Electronics,72000,2,0,144000,North,Corporate
+2024-03-04,Bookshelf,Furniture,6500,8,10,46800,South,Retail
+2024-03-08,Headphones,Electronics,4500,18,5,76950,East,Retail
+2024-03-11,A4 Paper Ream,Stationery,400,300,0,120000,West,Corporate
+2024-03-15,Conference Table,Furniture,45000,1,0,45000,North,Corporate
+2024-03-18,Smartwatch,Electronics,15000,7,5,99750,South,Corporate
+2024-03-22,Stapler,Stationery,350,80,0,28000,East,Retail
+2024-03-25,Gaming Chair,Furniture,22000,3,5,62700,West,Retail
+2024-03-28,External SSD,Electronics,6500,14,3,88270,North,Corporate
+2024-04-02,Laptop Pro,Electronics,85000,4,8,312800,South,Corporate
+2024-04-05,Locker Unit,Furniture,9500,5,0,47500,East,Retail
+2024-04-08,Bluetooth Speaker,Electronics,3200,22,5,66880,West,Retail
+2024-04-12,Highlighter Set,Stationery,120,250,0,30000,North,Retail
+2024-04-15,Reception Desk,Furniture,35000,2,5,66500,South,Corporate
+2024-04-18,Printer Laser,Electronics,18000,6,10,97200,East,Corporate
+2024-04-22,Whiteboard,Stationery,2500,15,5,35625,West,Corporate
+2024-04-25,Sofa Set Office,Furniture,55000,1,0,55000,North,Corporate
+2024-04-28,Power Bank,Electronics,2800,30,0,84000,South,Retail
+2024-05-02,Laptop Air,Electronics,72000,3,5,205200,East,Corporate
+2024-05-05,Study Table,Furniture,7800,7,10,49140,West,Retail
+2024-05-09,Wireless Charger,Electronics,1800,25,0,45000,North,Retail
+2024-05-12,Clipboard Set,Stationery,180,120,0,21600,South,Retail
+2024-05-15,Executive Chair,Furniture,30000,2,5,57000,East,Corporate
+2024-05-18,Smart TV 43,Electronics,42000,3,8,115920,West,Corporate
+2024-05-22,Index Cards,Stationery,60,400,0,24000,North,Retail
+2024-05-25,Wardrobe Office,Furniture,12000,4,0,48000,South,Retail
+2024-05-28,Laptop Pro,Electronics,85000,5,10,382500,East,Corporate
+2024-06-02,Coffee Table,Furniture,5500,6,5,31350,West,Retail
+2024-06-05,Projector HD,Electronics,55000,2,5,104500,North,Corporate
+2024-06-08,Pen Drive 64GB,Electronics,650,100,0,65000,South,Retail
+2024-06-12,Notepad Pack,Stationery,300,200,5,57000,East,Retail
+2024-06-15,Office Sofa,Furniture,28000,2,0,56000,West,Corporate
+2024-06-18,Laptop Air,Electronics,72000,4,8,264960,North,Corporate
+2024-06-22,Scissors Set,Stationery,90,150,0,13500,South,Retail
+2024-07-02,Monitor 32inch,Electronics,45000,3,5,128250,East,Corporate
+2024-07-05,Wooden Desk,Furniture,15000,5,10,67500,West,Retail
+2024-07-08,Laptop Pro,Electronics,85000,2,0,170000,North,Corporate
+2024-07-12,Gel Pen Pack,Stationery,200,300,0,60000,South,Retail
+2024-07-15,Visitor Chair,Furniture,4500,10,5,42750,East,Retail
+2024-07-18,Smart Speaker,Electronics,8500,8,3,65960,West,Retail
+2024-07-22,Ruler Set,Stationery,50,500,0,25000,North,Retail
+2024-07-25,L-Shape Desk,Furniture,20000,3,5,57000,South,Corporate
+2024-07-28,Tablet 12inch,Electronics,38000,4,5,144400,East,Corporate
+2024-08-02,Laptop Air,Electronics,72000,5,10,324000,West,Corporate
+2024-08-05,Cabinet Steel,Furniture,11000,4,0,44000,North,Retail
+2024-08-08,Router WiFi,Electronics,3500,20,5,66500,South,Corporate
+2024-08-12,Calculator,Stationery,450,80,0,36000,East,Retail
+2024-08-15,Laptop Pro,Electronics,85000,3,5,242250,West,Corporate
+2024-08-18,Lounge Chair,Furniture,16000,3,8,44160,North,Retail
+2024-08-22,Flash Drive,Electronics,400,200,0,80000,South,Retail
+2024-08-25,Spiral Notebook,Stationery,120,400,0,48000,East,Retail
+2024-08-28,Meeting Table,Furniture,38000,2,5,72200,West,Corporate
+2024-09-02,Smart TV 55,Electronics,68000,2,5,129200,North,Corporate
+2024-09-05,Drawer Unit,Furniture,7000,6,10,37800,South,Retail
+2024-09-08,Laptop Pro,Electronics,85000,4,8,312800,East,Corporate
+2024-09-12,Tape Dispenser,Stationery,250,100,0,25000,West,Retail
+2024-09-15,Reading Chair,Furniture,9500,4,5,36100,North,Retail
+2024-09-18,Graphics Card,Electronics,28000,6,3,162960,South,Corporate
+2024-09-22,Binder Set,Stationery,350,150,0,52500,East,Corporate
+2024-09-25,Laptop Air,Electronics,72000,3,0,216000,West,Corporate
+2024-09-28,Pedestal Fan,Furniture,3200,15,5,45600,North,Retail
+2024-10-02,Laptop Pro,Electronics,85000,5,10,382500,South,Corporate
+2024-10-05,Study Chair,Furniture,5500,8,0,44000,East,Retail
+2024-10-08,Noise Cancelling HP,Electronics,12000,10,5,114000,West,Corporate
+2024-10-12,Staple Pins,Stationery,30,1000,0,30000,North,Retail
+2024-10-15,Corner Desk,Furniture,18000,4,8,66240,South,Corporate
+2024-10-18,Smart Display,Electronics,22000,5,5,104500,East,Corporate
+2024-10-22,Folder Set,Stationery,180,200,0,36000,West,Retail
+2024-10-25,Bookcase,Furniture,8500,6,10,45900,North,Retail
+2024-10-28,Laptop Air,Electronics,72000,4,5,273600,South,Corporate
+2024-11-02,Portable Monitor,Electronics,18000,7,3,122220,East,Corporate
+2024-11-05,Office Cabinet,Furniture,14000,3,0,42000,West,Retail
+2024-11-08,Laptop Pro,Electronics,85000,6,10,459000,North,Corporate
+2024-11-12,Correction Pen,Stationery,60,300,0,18000,South,Retail
+2024-11-15,TV Unit Furniture,Furniture,12000,4,5,45600,East,Retail
+2024-11-18,SSD Internal,Electronics,5500,20,5,104500,West,Corporate
+2024-11-22,Label Maker,Stationery,1200,40,0,48000,North,Corporate
+2024-11-25,Gaming Desk,Furniture,24000,3,8,66240,South,Retail
+2024-11-28,Smartwatch Pro,Electronics,22000,5,5,104500,East,Corporate
+2024-12-02,Laptop Air,Electronics,72000,6,10,388800,West,Corporate
+2024-12-05,Recliner Chair,Furniture,35000,2,5,66500,North,Corporate
+2024-12-08,Laptop Pro,Electronics,85000,7,12,523600,South,Corporate
+2024-12-12,Pen Holder,Stationery,200,150,0,30000,East,Retail
+2024-12-15,Display Cabinet,Furniture,19000,3,5,54150,West,Retail
+2024-12-18,Smart Ring,Electronics,8500,12,3,98940,North,Corporate
+2024-12-22,Notepad Premium,Stationery,500,100,5,47500,South,Retail
+2024-12-25,Laptop Pro,Electronics,85000,8,15,578000,East,Corporate
+2024-12-28,Office Plant Stand,Furniture,2500,20,0,50000,West,Retail
+2024-12-30,Wireless Earbuds,Electronics,4500,25,5,106875,North,Retail

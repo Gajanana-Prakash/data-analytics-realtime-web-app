@@ -1,38 +1,95 @@
 {% extends "base.html" %}
+{% block title %}Register — DataPulse{% endblock %}
 
 {% block content %}
+<div class="auth-wrapper">
+    <div class="auth-card">
 
-<div class="row justify-content-center">
+        <div class="auth-header">
+            <div class="auth-logo">⬡</div>
+            <h1 class="auth-title">Create account</h1>
+            <p class="auth-subtitle">Start analysing your data in seconds</p>
+        </div>
 
-<div class="col-md-4">
+        <form method="POST" action="{{ url_for('register') }}" class="auth-form">
 
-<h3 class="text-center">Register</h3>
+            <div class="form-group">
+                <label class="form-label">Username</label>
+                <div class="input-wrapper">
+                    <i class="bi bi-person input-icon"></i>
+                    <input
+                        type="text"
+                        name="username"
+                        class="form-control auth-input"
+                        placeholder="yourname"
+                        required
+                        minlength="3"
+                        autocomplete="username"
+                    >
+                </div>
+            </div>
 
-<form method="POST">
+            <div class="form-group mt-3">
+                <label class="form-label">Email address</label>
+                <div class="input-wrapper">
+                    <i class="bi bi-envelope input-icon"></i>
+                    <input
+                        type="email"
+                        name="email"
+                        class="form-control auth-input"
+                        placeholder="you@example.com"
+                        required
+                        autocomplete="email"
+                    >
+                </div>
+            </div>
 
-<div class="mb-3">
-<label>Username</label>
-<input type="text" name="username" class="form-control" required>
+            <div class="form-group mt-3">
+                <label class="form-label">Password</label>
+                <div class="input-wrapper">
+                    <i class="bi bi-lock input-icon"></i>
+                    <input
+                        type="password"
+                        name="password"
+                        id="passwordInput"
+                        class="form-control auth-input"
+                        placeholder="Min 6 characters"
+                        required
+                        minlength="6"
+                        autocomplete="new-password"
+                    >
+                    <button type="button" class="toggle-password" onclick="togglePassword()">
+                        <i class="bi bi-eye" id="eyeIcon"></i>
+                    </button>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-auth mt-4">
+                <span>Create Account</span>
+                <i class="bi bi-arrow-right"></i>
+            </button>
+
+        </form>
+
+        <p class="auth-footer">
+            Already have an account?
+            <a href="{{ url_for('login') }}">Sign in</a>
+        </p>
+
+    </div>
 </div>
 
-<div class="mb-3">
-<label>Email</label>
-<input type="email" name="email" class="form-control" required>
-</div>
-
-<div class="mb-3">
-<label>Password</label>
-<input type="password" name="password" class="form-control" required>
-</div>
-
-<button class="btn btn-success w-100">
-Register
-</button>
-
-</form>
-
-</div>
-
-</div>
-
+<script>
+function togglePassword() {
+    const input = document.getElementById('passwordInput');
+    const icon  = document.getElementById('eyeIcon');
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'bi bi-eye-slash';
+    } else {
+        input.type = 'password';
+        icon.className = 'bi bi-eye';
+    }
+}
+</script>
 {% endblock %}

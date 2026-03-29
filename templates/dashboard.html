@@ -1,189 +1,495 @@
 {% extends "base.html" %}
+{% block title %}Dashboard — DataPulse{% endblock %}
+
+{% block head %}
+<meta name="dataset-id" content="{{ selected_dataset if selected_dataset else '' }}">
+{% endblock %}
 
 {% block content %}
+<div class="dashboard-wrapper">
 
-<h2>Analytics Dashboard</h2>
+    <!-- ========================= -->
+    <!-- SIDEBAR -->
+    <!-- ========================= -->
+    <aside class="sidebar">
 
-<div class="row mb-4">
+        <div class="sidebar-section">
+            <p class="sidebar-label">Datasets</p>
 
-    <div class="col-md-3">
-        <div class="card p-3">
-            <h5>Total Datasets</h5>
-            <h2>{{ total_datasets }}</h2>
+            {% if datasets %}
+            <ul class="dataset-list">
+                {% for d in datasets %}
+                <li class="dataset-item {% if selected_dataset == d.id %}active{% endif %}">
+                    <a href="{{ url_for('dashboard', dataset=d.id) }}" class="dataset-link">
+                        <i class="bi bi-table"></i>
+                        <span class="dataset-name" title="{{ d.original_name }}">
+                            {{ d.original_name if d.original_name else 'Dataset ' ~ d.id }}
+                        </span>
+                    </a>
+                    <button class="btn-delete-ds" data-id="{{ d.id }}" onclick="deleteDataset(this.dataset.id)" title="Delete">
+                        <i class="bi bi-trash3"></i>
+                    </button>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <div class="empty-sidebar">
+                <i class="bi bi-cloud-upload" style="font-size:2rem;opacity:0.3"></i>
+                <p>No datasets yet</p>
+            </div>
+            {% endif %}
         </div>
-    </div>
 
-    <div class="col-md-3">
-        <div class="card p-3">
-            <h5>Total Records</h5>
-            <h2 id="totalRecords">{{ total_records }}</h2>
-        </div>
-    </div>
+        <!-- Upload in sidebar -->
+        <div class="sidebar-upload">
+            <p class="sidebar-label">Upload File</p>
+            <form id="uploadForm">
+                <label for="fileInput" class="upload-drop-zone" id="dropZone">
+                    <i class="bi bi-cloud-arrow-up upload-icon"></i>
+                    <span id="uploadLabel">CSV or Excel</span>
+                    <span class="upload-hint">Drag & drop or click</span>
+                    <input type="file" id="fileInput" name="file"
+                           accept=".csv,.xlsx,.xls" required style="display:none">
+                </label>
+                <button type="submit" class="btn-upload" id="uploadBtn">
+                    <i class="bi bi-upload"></i> Upload & Analyse
+                </button>
+            </form>
 
-</div>
-
-<!-- Dataset Selector -->
-
-<form method="GET">
-    <select name="dataset" class="form-select" onchange="this.form.submit()">
-        {% for d in datasets %}
-        <option value="{{ d.id }}"
-            {% if selected_dataset == d.id %}selected{% endif %}>
-            Dataset {{ d.id }} - {{ d.filename }}
-        </option>
-        {% endfor %}
-    </select>
-</form>
-
-<br>
-
-<br>
-
-<!-- =============================== -->
-<!-- 🔥 UPLOAD DATASET -->
-<!-- =============================== -->
-
-<h4>Upload Dataset</h4>
-
-<form 
-    id="uploadForm" 
-    action="/upload-file" 
-    method="POST" 
-    enctype="multipart/form-data"
->
-
-    <!-- File Input -->
-    <input 
-        type="file" 
-        id="fileInput" 
-        name="file"
-        accept=".csv" 
-        required
-    >
-
-    <!-- Upload Button -->
-    <button type="submit">Upload</button>
-
-</form>
-
-<br>
-
-
-<!-- ============================= -->
-<!-- ✅ PROFESSIONAL PROGRESS BAR -->
-<!-- ============================= -->
-
-<div id="progress-container" style="display:none; margin-bottom:20px;">
-
-    <div class="card p-3">
-
-        <h5 id="progress-text">Processing...</h5>
-
-        <div class="progress">
-            <div id="progress-bar"
-                 class="progress-bar progress-bar-striped progress-bar-animated"
-                 style="width: 0%;">
+            <!-- Progress -->
+            <div id="progress-container" style="display:none;" class="progress-wrapper">
+                <div class="progress">
+                    <div id="progress-bar" class="progress-bar" style="width:0%"></div>
+                </div>
+                <p id="progress-text" class="progress-text">Processing...</p>
             </div>
         </div>
 
-    </div>
+    </aside>
 
-</div>
+    <!-- ========================= -->
+    <!-- MAIN PANEL -->
+    <!-- ========================= -->
+    <div class="main-panel">
 
-<div id="summaryBox" style="
-    background:#ffffff;
-    padding:15px;
-    margin-bottom:20px;
-    border-radius:5px;
-    border:1px solid #ddd;
-">
-    <b>Summary:</b>
-    <div id="summaryContent">Waiting for summary...</div>
-</div>
+        <!-- Page Header -->
+        <div class="panel-header">
+            <div>
+                <h2 class="panel-title">Analytics Dashboard</h2>
+                <p class="panel-subtitle">
+                    {% if selected_name %}{{ selected_name }}{% else %}Select or upload a dataset{% endif %}
+                </p>
+            </div>
+            <div class="live-badge">
+                <span class="live-dot"></span> Live
+            </div>
+        </div>
 
-<!-- Charts -->
+        <!-- ========================= -->
+        <!-- STAT CARDS -->
+        <!-- ========================= -->
+        <div class="stats-row">
 
-<div class="row">
+            <div class="stat-card">
+                <div class="stat-icon" style="background:#e8f4ff;color:#2196F3">
+                    <i class="bi bi-database"></i>
+                </div>
+                <div>
+                    <p class="stat-label">Total Datasets</p>
+                    <h3 class="stat-value">{{ total_datasets }}</h3>
+                </div>
+            </div>
 
-    <div class="col-md-6">
-        <h5>Category Distribution</h5>
+            <div class="stat-card">
+                <div class="stat-icon" style="background:#e8fff4;color:#00b894">
+                    <i class="bi bi-list-ol"></i>
+                </div>
+                <div>
+                    <p class="stat-label">Total Records</p>
+                    <h3 class="stat-value" id="totalRecords">{{ total_records }}</h3>
+                </div>
+            </div>
 
-        <!-- ✅ DATA STORED HERE -->
-        <canvas id="categoryChart"
-            data-labels='{{ category_labels | tojson }}'
-            data-values='{{ category_values | tojson }}'>
-        </canvas>
-    </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background:#fff8e8;color:#fd9644">
+                    <i class="bi bi-columns-gap"></i>
+                </div>
+                <div>
+                    <p class="stat-label">Columns</p>
+                    <h3 class="stat-value" id="totalColumns">{{ preview_columns | length }}</h3>
+                </div>
+            </div>
 
-    <div class="col-md-6">
-        <h5>Monthly Trend</h5>
+            <div class="stat-card">
+                <div class="stat-icon" style="background:#ffe8ff;color:#a55eea">
+                    <i class="bi bi-activity"></i>
+                </div>
+                <div>
+                    <p class="stat-label">Status</p>
+                    <h3 class="stat-value" id="statusBadge" style="font-size:0.9rem">
+                        {% if selected_dataset %}<span class="badge bg-success">Ready</span>{% else %}<span class="badge bg-secondary">Idle</span>{% endif %}
+                    </h3>
+                </div>
+            </div>
 
-        <!-- ✅ DATA STORED HERE -->
-        <canvas id="monthChart"
-            data-labels='{{ month_labels | tojson }}'
-            data-values='{{ month_values | tojson }}'>
-        </canvas>
-    </div>
+        </div>
 
-</div>
+        <!-- ========================= -->
+        <!-- EXPORT BUTTONS -->
+        <!-- ========================= -->
+        {% if selected_dataset %}
+        <div class="export-row">
+            <span class="export-label"><i class="bi bi-download"></i> Export:</span>
+            <button class="btn-export" onclick="exportExcel()" title="Download full data + summary as Excel">
+                <i class="bi bi-file-earmark-excel"></i> Excel
+            </button>
+            <button class="btn-export" onclick="exportChart('categoryChart','category_chart')" title="Download Category chart as PNG">
+                <i class="bi bi-bar-chart"></i> Category PNG
+            </button>
+            <button class="btn-export" onclick="exportChart('monthChart','monthly_trend')" title="Download Monthly Trend chart as PNG">
+                <i class="bi bi-graph-up"></i> Trend PNG
+            </button>
+        </div>
+        {% endif %}
 
-<br>
+        <!-- ========================= -->
+        <!-- CHARTS ROW -->
+        <!-- ========================= -->
+        <div class="charts-row">
 
-<!-- Dataset Preview -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h5 class="chart-title"><i class="bi bi-bar-chart-fill"></i> Category Distribution
+                        <span id="catColBadge" class="col-badge">
+                            {% if category_labels %}{{ category_labels | length }} values{% endif %}
+                        </span>
+                    </h5>
+                </div>
+                <div class="chart-body">
+                    <canvas id="categoryChart"
+                        data-labels='{{ category_labels | tojson }}'
+                        data-values='{{ category_values | tojson }}'>
+                    </canvas>
+                    <div id="categoryEmpty" class="chart-empty" style="display:none">
+                        <i class="bi bi-bar-chart"></i>
+                        <p>No categorical column detected</p>
+                    </div>
+                </div>
+            </div>
 
-<h4>Dataset Preview</h4>
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h5 class="chart-title"><i class="bi bi-graph-up-arrow"></i> Monthly Trend
+                        <span id="dateColBadge" class="col-badge">
+                            {% if month_labels %}{{ month_labels | length }} months{% endif %}
+                        </span>
+                    </h5>
+                </div>
+                <div class="chart-body">
+                    <canvas id="monthChart"
+                        data-labels='{{ month_labels | tojson }}'
+                        data-values='{{ month_values | tojson }}'>
+                    </canvas>
+                    <div id="monthEmpty" class="chart-empty" style="display:none">
+                        <i class="bi bi-graph-up"></i>
+                        <p>No date column detected</p>
+                    </div>
+                </div>
+            </div>
 
-<table class="table table-bordered">
+        </div>
 
-    <thead>
-        <tr>
-            {% for col in preview_columns %}
-            <th>{{ col }}</th>
-            {% endfor %}
-        </tr>
-    </thead>
+        <!-- ========================= -->
+        <!-- CORRELATION HEATMAP -->
+        <!-- ========================= -->
+        {% if corr_labels %}
+        <div class="section-card">
+            <div class="section-header">
+                <h5 class="section-title"><i class="bi bi-grid-3x3"></i> Correlation Matrix</h5>
+            </div>
+            <div class="corr-scroll">
+                <table class="corr-table">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            {% for label in corr_labels %}
+                            <th>{{ label }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in corr_values %}
+                        <tr>
+                            <th>{{ corr_labels[loop.index0] }}</th>
+                            {% for val in row %}
+                            <td class="corr-cell" data-val="{{ val }}">{{ val }}</td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
 
-    <tbody>
-        {% for row in preview_rows %}
-        <tr>
-            {% for cell in row %}
-            <td>{{ cell }}</td>
-            {% endfor %}
-        </tr>
-        {% endfor %}
-    </tbody>
+        <!-- ========================= -->
+        <!-- STATISTICAL SUMMARY -->
+        <!-- ========================= -->
+        <div class="section-card">
+            <div class="section-header">
+                <h5 class="section-title"><i class="bi bi-calculator"></i> Statistical Summary</h5>
+            </div>
+            <div class="table-scroll" id="summaryContent">
+                {% if summary %}
+                    {{ summary | safe }}
+                {% else %}
+                <div class="empty-state">
+                    <i class="bi bi-calculator" style="font-size:2.5rem;opacity:0.2"></i>
+                    <p>Upload a dataset to see statistics</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
 
-</table>
+        <!-- ========================= -->
+        <!-- DATA PREVIEW (PAGINATED) -->
+        <!-- ========================= -->
+        <div class="section-card">
+            <div class="section-header">
+                <h5 class="section-title"><i class="bi bi-eye"></i> Data Preview</h5>
+                <div class="preview-controls">
+                    <label class="per-page-label">Rows:</label>
+                    <select id="perPageSelect" class="per-page-select" onchange="changePerPage(this.value)">
+                        <option value="25" selected>25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                    <span id="rowRangeLabel" class="row-range-label"></span>
+                </div>
+            </div>
 
-<!-- =============================== -->
-<!-- 🔔 TOAST NOTIFICATION UI -->
-<!-- =============================== -->
+            <div id="previewWrapper">
+            {% if preview_columns %}
+            <div class="table-scroll">
+                <table class="preview-table" id="previewTable">
+                    <thead>
+                        <tr>
+                            {% for col in preview_columns %}
+                            <th>{{ col }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody id="previewBody">
+                        {% for row in preview_rows %}
+                        <tr>
+                            {% for cell in row %}
+                            <td>{{ cell }}</td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state" id="previewEmpty">
+                <i class="bi bi-table" style="font-size:3rem;opacity:0.2"></i>
+                <p>Upload a dataset to see a preview</p>
+            </div>
+            {% endif %}
+            </div>
 
-<div id="toast" style="
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    min-width: 250px;
-    padding: 15px;
-    border-radius: 8px;
-    color: white;
-    font-weight: bold;
-    display: none;
-    z-index: 9999;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-">
-</div>
+            <!-- Pagination controls -->
+            <div class="pagination-bar" id="paginationBar" style="display:none;">
+                <button class="page-btn" id="btnFirst"  onclick="goToPage(1)"             title="First">«</button>
+                <button class="page-btn" id="btnPrev"   onclick="goToPage(currentPage-1)" title="Previous">‹</button>
+                <span   class="page-info" id="pageInfo">Page 1 of 1</span>
+                <button class="page-btn" id="btnNext"   onclick="goToPage(currentPage+1)" title="Next">›</button>
+                <button class="page-btn" id="btnLast"   onclick="goToPage(totalPages)"    title="Last">»</button>
+            </div>
+        </div>
+
+    </div><!-- /main-panel -->
+</div><!-- /dashboard-wrapper -->
+
+{% endblock %}
 
 
-<!-- SOCKET.IO CDN -->
-
+{% block scripts %}
+<!-- Socket.IO -->
 <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
-
-
-<!-- ✅ ADD CHART.JS -->
+<!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<!-- Your JS file -->
+<!-- Custom JS -->
 <script src="{{ url_for('static', filename='app.js') }}"></script>
 
+<script>
+// ========================
+// DATASET ID (from meta tag — avoids Pylance JS parsing errors)
+// ========================
+const _dsId = document.querySelector('meta[name="dataset-id"]');
+const DATASET_ID = _dsId && _dsId.content ? parseInt(_dsId.content) : null;
+
+// ========================
+// DELETE DATASET
+// ========================
+function deleteDataset(id) {
+    const dsId = typeof id === 'object' ? id : id; // works with both number and string
+    if (!confirm('Delete this dataset? This cannot be undone.')) return;
+    fetch(`/delete-dataset/${dsId}`, { method: 'POST' })
+        .then(r => r.json())
+        .then(data => {
+            if (data.message) {
+                showToast('Dataset deleted', 'success');
+                setTimeout(() => window.location.href = '/dashboard', 1000);
+            } else {
+                showToast(data.error || 'Error deleting dataset', 'danger');
+            }
+        });
+}
+
+// ========================
+// TOAST HELPER
+// ========================
+function showToast(message, type = 'success') {
+    const toast     = document.getElementById('liveToast');
+    const toastBody = document.getElementById('toastBody');
+    toastBody.innerText = message;
+    toast.className = `toast align-items-center text-bg-${type} border-0`;
+    new bootstrap.Toast(toast, { delay: 3000 }).show();
+}
+
+// ========================
+// EXPORT EXCEL
+// ========================
+function exportExcel() {
+    if (!DATASET_ID) { showToast('No dataset selected', 'warning'); return; }
+    showToast('Preparing Excel export...', 'success');
+    window.location.href = `/export/excel/${DATASET_ID}`;
+}
+
+// ========================
+// EXPORT CHART AS PNG
+// ========================
+function exportChart(canvasId, filename) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) { showToast('Chart not available', 'warning'); return; }
+    const link    = document.createElement('a');
+    link.download = filename + '.png';
+    link.href     = canvas.toDataURL('image/png');
+    link.click();
+    showToast('Chart downloaded!', 'success');
+}
+
+// ========================
+// PAGINATION STATE
+// ========================
+let currentPage = 1;
+let totalPages  = 1;
+let currentPerPage = 25;
+
+function initPagination() {
+    if (!DATASET_ID) return;
+    const bar = document.getElementById('paginationBar');
+    if (bar) bar.style.display = 'flex';
+    loadPage(1, currentPerPage);
+}
+
+function changePerPage(val) {
+    currentPerPage = parseInt(val);
+    loadPage(1, currentPerPage);
+}
+
+function goToPage(page) {
+    if (page < 1 || page > totalPages) return;
+    loadPage(page, currentPerPage);
+}
+
+function loadPage(page, perPage) {
+    if (!DATASET_ID) return;
+
+    fetch(`/api/dataset-rows/${DATASET_ID}?page=${page}&per_page=${perPage}`)
+        .then(r => r.json())
+        .then(data => {
+            if (data.error) { showToast(data.error, 'danger'); return; }
+
+            currentPage = data.page;
+            totalPages  = data.pages;
+
+            // Update table
+            updatePreviewTableFull(data.columns, data.rows);
+
+            // Update pagination UI
+            const info  = document.getElementById('pageInfo');
+            const range = document.getElementById('rowRangeLabel');
+            if (info)  info.textContent  = `Page ${data.page} of ${data.pages}`;
+
+            const start = (data.page - 1) * data.per_page + 1;
+            const end   = Math.min(data.page * data.per_page, data.total);
+            if (range) range.textContent = `${start}–${end} of ${data.total}`;
+
+            document.getElementById('btnFirst').disabled = (page === 1);
+            document.getElementById('btnPrev').disabled  = (page === 1);
+            document.getElementById('btnNext').disabled  = (page === data.pages);
+            document.getElementById('btnLast').disabled  = (page === data.pages);
+
+            const bar = document.getElementById('paginationBar');
+            if (bar) bar.style.display = data.pages > 1 ? 'flex' : 'none';
+        })
+        .catch(err => console.error('Pagination error:', err));
+}
+
+function updatePreviewTableFull(columns, rows) {
+    const wrapper = document.getElementById('previewWrapper');
+    if (!wrapper) return;
+    let html = '<div class="table-scroll"><table class="preview-table" id="previewTable"><thead><tr>';
+    columns.forEach(col => { html += `<th>${col}</th>`; });
+    html += '</tr></thead><tbody id="previewBody">';
+    rows.forEach(row => {
+        html += '<tr>';
+        row.forEach(cell => { html += `<td>${cell ?? ''}</td>`; });
+        html += '</tr>';
+    });
+    html += '</tbody></table></div>';
+    wrapper.innerHTML = html;
+}
+
+// ========================
+// DRAG & DROP FILE
+// ========================
+const dropZone    = document.getElementById('dropZone');
+const fileInput   = document.getElementById('fileInput');
+const uploadLabel = document.getElementById('uploadLabel');
+
+if (dropZone && fileInput) {
+    fileInput.addEventListener('change', () => {
+        if (fileInput.files[0]) {
+            uploadLabel.textContent = fileInput.files[0].name;
+            dropZone.classList.add('has-file');
+        }
+    });
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+    dropZone.addEventListener('drop', e => {
+        e.preventDefault();
+        dropZone.classList.remove('drag-over');
+        const file = e.dataTransfer.files[0];
+        const allowed = ['.csv','.xlsx','.xls','.pdf'];
+        const ext = file ? '.' + file.name.split('.').pop().toLowerCase() : '';
+        if (file && allowed.includes(ext)) {
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            fileInput.files = dt.files;
+            uploadLabel.textContent = file.name;
+            dropZone.classList.add('has-file');
+        } else {
+            showToast('Please drop a CSV, Excel, or PDF file', 'danger');
+        }
+    });
+}
+
+// Init pagination on load
+window.addEventListener('DOMContentLoaded', () => {
+    if (DATASET_ID) initPagination();
+});
+</script>
 {% endblock %}
